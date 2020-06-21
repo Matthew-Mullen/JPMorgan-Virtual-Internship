@@ -1,119 +1,96 @@
-From 48283381e879f956328b964c063fd41f9dfc2661 Mon Sep 17 00:00:00 2001
+From b42f1fe14535346b40ddcfdb297d3eca4f52cd93 Mon Sep 17 00:00:00 2001
 From: Matthew Mullen <mtmullen@ualberta.ca>
-Date: Fri, 19 Jun 2020 21:47:24 -0600
+Date: Sat, 20 Jun 2020 20:48:03 -0600
 Subject: [PATCH] Create Patch File
 
 ---
- 0001-Create-Patch-File.patch | 72 ++++++++++++++++++++++++++++++++++++
- client_test.py               | 16 ++++++++
- 2 files changed, 88 insertions(+)
- create mode 100644 0001-Create-Patch-File.patch
+ src/App.tsx   | 24 ++++++++++++++++++++----
+ src/Graph.tsx |  8 +++++++-
+ 2 files changed, 27 insertions(+), 5 deletions(-)
 
-diff --git a/0001-Create-Patch-File.patch b/0001-Create-Patch-File.patch
-new file mode 100644
-index 0000000..294f898
---- /dev/null
-+++ b/0001-Create-Patch-File.patch
-@@ -0,0 +1,72 @@
-+From 9a7d281ce20bbd0481c3c57f752167a4c23a8e88 Mon Sep 17 00:00:00 2001
-+From: Matthew Mullen <mtmullen@ualberta.ca>
-+Date: Fri, 19 Jun 2020 21:30:50 -0600
-+Subject: [PATCH] Create Patch File
-+
-+---
-+ client3.py     | 11 ++++++++---
-+ client_test.py |  5 ++++-
-+ 2 files changed, 12 insertions(+), 4 deletions(-)
-+
-+diff --git a/client3.py b/client3.py
-+index f1771c3..62cb962 100644
-+--- a/client3.py
-++++ b/client3.py
-+@@ -35,14 +35,17 @@ def getDataPoint(quote):
-+ 	stock = quote['stock']
-+ 	bid_price = float(quote['top_bid']['price'])
-+ 	ask_price = float(quote['top_ask']['price'])
-+-	price = bid_price
-++	price = (bid_price+ask_price)/2
-+ 	return stock, bid_price, ask_price, price
-+ 
-+ def getRatio(price_a, price_b):
-+ 	""" Get ratio of price_a and price_b """
-+ 	""" ------------- Update this function ------------- """
-+ 	""" Also create some unit tests for this function in client_test.py """
-+-	return 1
-++	if price_b==0:
-++		# avoiding divide by zero error
-++		return 
-++	return (price_a/price_b)
-+ 
-+ # Main
-+ if __name__ == "__main__":
-+@@ -52,8 +55,10 @@ if __name__ == "__main__":
-+ 		quotes = json.loads(urllib.request.urlopen(QUERY.format(random.random())).read())
-+ 
-+ 		""" ----------- Update to get the ratio --------------- """
-++		prices={}
-+ 		for quote in quotes:
-+ 			stock, bid_price, ask_price, price = getDataPoint(quote)
-++			prices[stock]=price
-+ 			print ("Quoted %s at (bid:%s, ask:%s, price:%s)" % (stock, bid_price, ask_price, price))
-+ 
-+-		print ("Ratio %s" % getRatio(price, price))
-++		print ("Ratio %s" % getRatio(prices['ABC'], prices['DEF']))
-+diff --git a/client_test.py b/client_test.py
-+index af2bf26..3705df5 100644
-+--- a/client_test.py
-++++ b/client_test.py
-+@@ -8,6 +8,8 @@ class ClientTest(unittest.TestCase):
-+       {'top_ask': {'price': 121.68, 'size': 4}, 'timestamp': '2019-02-11 22:06:30.572453', 'top_bid': {'price': 117.87, 'size': 81}, 'id': '0.109974697771', 'stock': 'DEF'}
-+     ]
-+     """ ------------ Add the assertion below ------------ """
-++    for quote in quotes:
-++      self.assertEqual(getDataPoint(quote),(quote['stock'],quote['top_bid']['price'],quote['top_ask']['price'],(quote['top_bid']['price']+quote['top_ask']['price'])/2))
-+ 
-+   def test_getDataPoint_calculatePriceBidGreaterThanAsk(self):
-+     quotes = [
-+@@ -15,7 +17,8 @@ class ClientTest(unittest.TestCase):
-+       {'top_ask': {'price': 121.68, 'size': 4}, 'timestamp': '2019-02-11 22:06:30.572453', 'top_bid': {'price': 117.87, 'size': 81}, 'id': '0.109974697771', 'stock': 'DEF'}
-+     ]
-+     """ ------------ Add the assertion below ------------ """
-+-
-++  for quote in quotes:
-++    self.assertEqual(getDataPoint(quote),(quote['stock'],quote['top_bid']['price'],quote['top_ask']['price'],(quote['top_bid']['price']+quote['top_ask']['price'])/2))
-+ 
-+   """ ------------ Add more unit tests ------------ """
-+ 
-+-- 
-+2.27.0.windows.1
-+
-diff --git a/client_test.py b/client_test.py
-index 3705df5..2107c7b 100644
---- a/client_test.py
-+++ b/client_test.py
-@@ -21,6 +21,22 @@ class ClientTest(unittest.TestCase):
-     self.assertEqual(getDataPoint(quote),(quote['stock'],quote['top_bid']['price'],quote['top_ask']['price'],(quote['top_bid']['price']+quote['top_ask']['price'])/2))
+diff --git a/src/App.tsx b/src/App.tsx
+index 0728518..f569949 100755
+--- a/src/App.tsx
++++ b/src/App.tsx
+@@ -8,6 +8,7 @@ import './App.css';
+  */
+ interface IState {
+   data: ServerRespond[],
++  showGraph: boolean,
+ }
  
-   """ ------------ Add more unit tests ------------ """
-+  def test_getRatio_priceBZero(self):
-+    price_a=69
-+    price_b=0
-+    self.assertIsNone(getRatio(price_a,price_b))
-+  def test_getRatio_priceAZero(self):
-+    price_a=0
-+    price_b=69
-+    self.assertEqual(getRatio(price_a,price_b),0)
-+  def test_getRatio_greaterThanOne(self):
-+    price_a=2
-+    price_b=1
-+    self.assertGreater(getRatio(price_a,price_b),1)
-+  def testRatio_equalsOne(self):
-+    self.assertEqual(getRatio(1,1),1)
-+  def testRatio_lessThanOne(self):
-+    self.assertLess(getRatio(1,2),1)
+ /**
+@@ -22,6 +23,7 @@ class App extends Component<{}, IState> {
+       // data saves the server responds.
+       // We use this state to parse data down to the child element (Graph) as element property
+       data: [],
++      showGraph: false,
+     };
+   }
  
+@@ -29,18 +31,32 @@ class App extends Component<{}, IState> {
+    * Render Graph react component with state.data parse as property data
+    */
+   renderGraph() {
+-    return (<Graph data={this.state.data}/>)
+-  }
++    if (this.state.showGraph){
++
++    
++      return (<Graph data={this.state.data}/>)
++  }}
  
+   /**
+    * Get new data from server and update the state with the new data
+    */
+   getDataFromServer() {
+-    DataStreamer.getData((serverResponds: ServerRespond[]) => {
++    let x = 0;
++    const interval = setInterval(() =>{
++      DataStreamer.getData((serverResponds: ServerRespond[]) => {
+       // Update the state by creating a new array of data that consists of
+       // Previous data in the state and the new data from server
+-      this.setState({ data: [...this.state.data, ...serverResponds] });
++      
++        this.setState({
++          data: serverResponds,
++          showGraph : true,
++        });
+     });
++    x++;
++    if (x>1000){
++      clearInterval(interval);
++      }
++    }, 100);
+   }
+ 
+   /**
+diff --git a/src/Graph.tsx b/src/Graph.tsx
+index ec1430e..8b01eb9 100644
+--- a/src/Graph.tsx
++++ b/src/Graph.tsx
+@@ -14,7 +14,7 @@ interface IProps {
+  * Perspective library adds load to HTMLElement prototype.
+  * This interface acts as a wrapper for Typescript compiler.
+  */
+-interface PerspectiveViewerElement {
++interface PerspectiveViewerElement extends HTMLElement {
+   load: (table: Table) => void,
+ }
+ 
+@@ -49,6 +49,12 @@ class Graph extends Component<IProps, {}> {
+ 
+       // Add more Perspective configurations here.
+       elem.load(this.table);
++      elem.setAttribute('view', 'y_line');
++      elem.setAttribute('column-pivots', '[stock]');
++      elem.setAttribute('row-pivots', '[timestamp');
++      elem.setAttribute('columns', '[top_ask_price]');
++      elem.setAttribute('aggregates', '{"stock" : "distinct count", "top_ask_price" :"avg,"top_bid_price:"avg","timestamp":distinct count"}');
++      
+     }
+   }
  
 -- 
-2.27.0.windows.1
+2.27.0
 
